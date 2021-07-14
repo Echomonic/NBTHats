@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="NBTHats:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/NBTHats_jar</output-path>
+    <root id="archive" name="NBTHats.jar">
+      <element id="module-output" name="NBTHats" />
+    </root>
+  </artifact>
+</component>
