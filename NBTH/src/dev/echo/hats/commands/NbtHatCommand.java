@@ -71,7 +71,7 @@ public class NbtHatCommand extends NBTHelmetCommand {
                     player.sendMessage(Utility.color("&b/nbthats config <option> <disable|enable>"));
                     player.sendMessage(Utility.color("&3&l----------------------"));
                 }
-                if (args[0].equalsIgnoreCase("sethelmet")) {
+                if (args[0].equalsIgnoreCase("helmet")) {
 
                         if(player.getInventory().getItemInHand() != null) {
 
@@ -142,11 +142,12 @@ public class NbtHatCommand extends NBTHelmetCommand {
         List<String> tabComplete = new ArrayList<>();
         if(cmd.equalsIgnoreCase("nbthats")) {
             if (args.length >= 1) {
-                if (args[0].equalsIgnoreCase("sethelmet")) {
+                if (args[0].equalsIgnoreCase("helmet")) {
                     tabComplete.addAll(Arrays.asList("true", "false"));
                 } else if (args[0].equalsIgnoreCase("config")) {
                     for (ConfigTypes configTypes : ConfigTypes.values()) {
                         tabComplete.addAll(Arrays.asList(configTypes.getType()));
+                        tabComplete.removeAll(Arrays.asList("true", "false"));
                         if(configTypes.getType() == ConfigTypes.options.getType()){
                             tabComplete.addAll(Arrays.asList("true", "false"));
                         }
@@ -154,6 +155,8 @@ public class NbtHatCommand extends NBTHelmetCommand {
 
                 }
 
+            }else if(args.length == 0){
+                tabComplete.addAll(Arrays.asList("config", "helmet"));
             }
         }
         return tabComplete;
