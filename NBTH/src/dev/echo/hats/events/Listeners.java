@@ -3,7 +3,6 @@ package dev.echo.hats.events;
 import dev.echo.hats.NBTMain;
 import dev.echo.hats.filemanager.Config;
 import dev.echo.hats.utils.Utility;
-import net.minecraft.server.v1_8_R3.CreativeModeTab;
 import net.minecraft.server.v1_8_R3.ItemStack;
 import net.minecraft.server.v1_8_R3.NBTTagCompound;
 import net.minecraft.server.v1_8_R3.PacketPlayOutChat;
@@ -43,18 +42,18 @@ public class Listeners implements Listener {
 
 
                 }else{
-                    if(Config.buildPermission()) {
+                    if(Config.canBuild()) {
                         return;
                     }
                 }
 
             }else{
-                if(Config.buildPermission()) {
+                if(Config.canBuild()) {
                     return;
                 }
             }
         }catch (Exception e){
-            if(Config.buildPermission()) {
+            if(Config.canBuild()) {
                 return;
             }
         }

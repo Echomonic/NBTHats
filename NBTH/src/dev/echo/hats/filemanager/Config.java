@@ -10,13 +10,12 @@ public class Config {
     public Config(JavaPlugin loadedPlugin){
         plugin = loadedPlugin;
 
-        loadedPlugin.getConfig().options().copyDefaults(true);
+        addFileParams();
 
-        loadedPlugin.saveConfig();
     }
     public static String getPermissionMessage(){
 
-        return ChatColor.translateAlternateColorCodes('&',plugin.getConfig().getString("Permissions.noPerm"));
+        return ChatColor.translateAlternateColorCodes('&',plugin.getConfig().getString("permissions.noPerm"));
     }
     public static boolean sendNBTMessage(){
 
@@ -27,10 +26,27 @@ public class Config {
 
     public static boolean headSlotClick() {
 
-        return plugin.getConfig().getBoolean("options.putHeadOnClickInv");
+        return plugin.getConfig().getBoolean("options.clickInv");
     }
-    public static boolean buildPermission() {
+    public static boolean canBuild() {
 
-        return plugin.getConfig().getBoolean("Permissions.build");
+        return plugin.getConfig().getBoolean("options.build");
+    }
+
+    public void addFileParams(){
+        if(!(plugin.getConfig().contains("permissions") && plugin.getConfig().contains("error") && plugin.getConfig().contains("options"))) {
+            plugin.getConfig().set("permissions.noPerm", "&cYou don't have permission to perform this command!");
+
+            plugin.getConfig().set("error.failed", "&cThis isn`t a value in the config");
+            plugin.getConfig().set("error.command-runtime-error", "&cThis command failed to perform!");
+
+            plugin.getConfig().set("options.NBTMessage", false);
+            plugin.getConfig().set("options.clickInv", false);
+            plugin.getConfig().set("options.build", false);
+
+
+            plugin.saveConfig();
+
+        }
     }
 }
