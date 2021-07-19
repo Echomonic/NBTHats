@@ -34,15 +34,23 @@ public class NbtHatCommand extends NBTHelmetCommand {
                     try {
                         StringBuilder builder = new StringBuilder();
                         for (int i = 3; i < args.length; i++) {
-                            builder.append(args[i]).append(' ');
+                            builder.append(args[i] + " ");
                         }
                         String configOption = ConfigTypes.valueOf(args[1]).getType() + "." + args[2];
                         String valueSet = builder.toString();
 
                         if (NBTMain.instance.getConfig().getString(configOption) != null) {
                             sender.sendMessage(Utility.color("&3Config:&b Set " + configOption.replace(ConfigTypes.valueOf(args[1]).getType() + ".", "") + " to " + valueSet));
-                            NBTMain.instance.getConfig().set(configOption, valueSet);
+
+                            if(args[3].equalsIgnoreCase("true")){
+                                NBTMain.instance.getConfig().set(configOption,true);
+                            }else if(args[3].equalsIgnoreCase("false")){
+                                NBTMain.instance.getConfig().set(configOption, false);
+                            }else{
+                                NBTMain.instance.getConfig().set(configOption, valueSet);
+                            }
                             NBTMain.instance.saveConfig();
+
                         } else {
                             sender.sendMessage(Utility.getErrorMessage("failed"));
                         }
@@ -67,21 +75,27 @@ public class NbtHatCommand extends NBTHelmetCommand {
 
                 if (args[0].equalsIgnoreCase("help")) {
                     player.sendMessage(Utility.color("&3&l&----------------------"));
-                    player.sendMessage(Utility.color("&b/nbthats sethelmet <true : false>"));
+                    player.sendMessage(Utility.color("&b/nbthats helmet <true : false>"));
                     player.sendMessage(Utility.color("&b/nbthats config <option> <disable|enable>"));
                     player.sendMessage(Utility.color("&3&l----------------------"));
                 }
                 if (args[0].equalsIgnoreCase("helmet")) {
 
-                        if(player.getInventory().getItemInHand() != null) {
 
 
-                                ItemStack value = player.getInventory().getItemInHand();
+                    ItemStack value = player.getInventory().getItemInHand();
+                    net.minecraft.server.v1_8_R3.ItemStack changed = CraftItemStack.asNMSCopy(value);
 
-                                net.minecraft.server.v1_8_R3.ItemStack changed = CraftItemStack.asNMSCopy(value);
 
-                                if (args[1].equalsIgnoreCase("true")) {
+                    if(changed != null) {
 
+
+
+
+
+                        if (args[1].equalsIgnoreCase("true")) {
+
+                            if(!instance.getDisabledMaterials().holdingInvalidItem(player)) {
                                     if (Utility.hasTag("isHelmet", 0, changed)) {
                                         Utility.addTag("isHelmet", new NBTTagInt(1), changed);
 
@@ -91,20 +105,28 @@ public class NbtHatCommand extends NBTHelmetCommand {
                                     } else {
                                         player.sendMessage(Utility.color(NBTMain.ERROR_PREFIX + "&cThis item is already a helmet!"));
                                     }
-                                } else if (args[1].equalsIgnoreCase("false")) {
-                                    if (Utility.hasTag("isHelmet", 1, changed)) {
+                                return true;
+                            }else{
+                                player.sendMessage(ERROR_PREFIX + Utility.color("&cYou can't set this item to a helmet, as it's a disabled item."));
+                            }
+                        } else if (args[1].equalsIgnoreCase("false")) {
+                            if(changed != null)
+                            if (Utility.hasTag("isHelmet", 1, changed)) {
 
-                                        Utility.removeTag("isHelmet", changed);
+                                Utility.removeTag("isHelmet", changed);
 
-                                        player.getInventory().setItemInHand(CraftItemStack.asBukkitCopy(changed));
-                                        player.sendMessage(Utility.color(PREFIX + "&aYour item is now not a helmet!"));
-                                    } else {
-                                        player.sendMessage(Utility.color(ERROR_PREFIX + "&cThis item isn't a helmet!"));
-                                    }
-                                }
-                        }else{
-                            player.sendMessage(NBTMain.ERROR_PREFIX + ChatColor.RED + "You're not holding an item!");
+                                player.getInventory().setItemInHand(CraftItemStack.asBukkitCopy(changed));
+                                player.sendMessage(Utility.color(PREFIX + "&aYour item is now not a helmet!"));
+
+                            } else {
+                                player.sendMessage(Utility.color(ERROR_PREFIX + "&cThis item isn't a helmet!"));
+                            }
                         }
+
+                    }else{
+                        player.sendMessage(NBTMain.ERROR_PREFIX + ChatColor.RED + "You're currently not holding an item!");
+                        return true;
+                    }
 
                 } else if (args[0].equalsIgnoreCase("config")) {
                     try {
@@ -117,8 +139,16 @@ public class NbtHatCommand extends NBTHelmetCommand {
 
                         if (NBTMain.instance.getConfig().getString(configOption) != null) {
                             player.sendMessage(Utility.color("&3Config:&b Set " + configOption.replace(ConfigTypes.valueOf(args[1]).getType() + ".","") + " to " + valueSet));
-                            NBTMain.instance.getConfig().set(configOption, valueSet);
+                            if(args[3].equalsIgnoreCase("true")){
+                                NBTMain.instance.getConfig().set(configOption,true);
+                            }else if(args[3].equalsIgnoreCase("false")){
+                                NBTMain.instance.getConfig().set(configOption, false);
+                            }else{
+                                NBTMain.instance.getConfig().set(configOption, valueSet);
+                            }
                             NBTMain.instance.saveConfig();
+                            instance.reloadConfig();
+
                         } else {
                             player.sendMessage(NBTMain.ERROR_PREFIX + Utility.getErrorMessage("failed"));
                         }
@@ -141,14 +171,21 @@ public class NbtHatCommand extends NBTHelmetCommand {
     public List<String> tab(CommandSender sender,String cmd, String[] args) {
         List<String> tabComplete = new ArrayList<>();
         if(cmd.equalsIgnoreCase("nbthats")) {
+
+            if(args.length == 0){
+                tabComplete.addAll(Arrays.asList("config", "helmet"));
+            }
+
             if (args.length >= 1) {
                 if (args[0].equalsIgnoreCase("helmet")) {
                     tabComplete.addAll(Arrays.asList("true", "false"));
+                    tabComplete.removeAll(Arrays.asList("true", "false"));
                 } else if (args[0].equalsIgnoreCase("config")) {
                     for (ConfigTypes configTypes : ConfigTypes.values()) {
                         tabComplete.addAll(Arrays.asList(configTypes.getType()));
-                        tabComplete.removeAll(Arrays.asList("true", "false"));
+
                         if(configTypes.getType() == ConfigTypes.options.getType()){
+                            tabComplete.removeAll(Arrays.asList(configTypes.getType()));
                             tabComplete.addAll(Arrays.asList("true", "false"));
                         }
                     }

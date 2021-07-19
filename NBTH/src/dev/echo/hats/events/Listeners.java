@@ -3,6 +3,7 @@ package dev.echo.hats.events;
 import dev.echo.hats.NBTMain;
 import dev.echo.hats.filemanager.Config;
 import dev.echo.hats.utils.Utility;
+import lombok.SneakyThrows;
 import net.minecraft.server.v1_8_R3.ItemStack;
 import net.minecraft.server.v1_8_R3.NBTTagCompound;
 import net.minecraft.server.v1_8_R3.PacketPlayOutChat;
@@ -15,14 +16,18 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCreativeEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import static dev.echo.hats.NBTMain.*;
 
 public class Listeners implements Listener {
 
     private PacketPlayOutChat maintext;
 
+    @SneakyThrows
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
@@ -37,8 +42,12 @@ public class Listeners implements Listener {
 
                     int slot = player.getInventory().getHeldItemSlot();
 
+                    if(player.getInventory().getHelmet() == null){
+                        player.getInventory().clear(slot);
+                    }else{
+                        player.getInventory().setItemInHand(player.getInventory().getHelmet());
+                    }
                     player.getInventory().setHelmet(Utility.convertToBukkitItem(itemStack));
-                    player.getInventory().clear(slot);
 
 
                 }else{
@@ -63,101 +72,105 @@ public class Listeners implements Listener {
     public PacketPlayOutChat getChatText() {
         return maintext;
     }
+    @SneakyThrows
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event){
         Player player = (Player) event.getWhoClicked();
 
+        if(event.getInventory().getType() == InventoryType.CRAFTING) {
 
-        try {
+            try {
 
-            if (Config.headSlotClick()) {
-
-
-                if (player.getGameMode() == GameMode.SURVIVAL) {
-                    if (event.getSlot() == 39) {
-                        ItemStack cursor = Utility.convertToItem(event.getCursor());
-                        NBTTagCompound compound = Utility.getNBTTagCompound(cursor);
-
-                        PlayerInventory inventory = (PlayerInventory) event.getView().getBottomInventory();
-
-                        if (compound.getInt("isHelmet") == 1) {
-                            org.bukkit.inventory.ItemStack headItem = inventory.getHelmet();
+                if (Config.headSlotClick()) {
 
 
-                            new BukkitRunnable() {
+                    if (player.getGameMode() == GameMode.SURVIVAL) {
+                        if (event.getSlot() == 39) {
+                            ItemStack cursor = Utility.convertToItem(event.getCursor());
+                            NBTTagCompound compound = Utility.getNBTTagCompound(cursor);
 
-                                @Override
-                                public void run() {
-                                    player.getInventory().setHelmet(Utility.convertToBukkitItem(cursor));
-                                    cancel();
-                                }
-                            }.runTaskTimer(NBTMain.instance, 0, 1);
+                            PlayerInventory inventory = (PlayerInventory) event.getView().getBottomInventory();
 
-                            event.setCursor(headItem);
-                        }
+                            if (compound.getInt("isHelmet") == 1) {
+                                org.bukkit.inventory.ItemStack headItem = inventory.getHelmet();
 
 
-                        event.setResult(Event.Result.ALLOW);
-                    }
-                }
-                if(event.getInventory() instanceof InventoryCreativeEvent){
+                                new BukkitRunnable() {
 
-                    if (event.getSlot() == 5) {
-                        ItemStack cursor = Utility.convertToItem(event.getCursor());
-                        NBTTagCompound compound = Utility.getNBTTagCompound(cursor);
+                                    @Override
+                                    public void run() {
+                                        player.getInventory().setHelmet(Utility.convertToBukkitItem(cursor));
+                                        cancel();
+                                    }
+                                }.runTaskTimer(NBTMain.instance, 0, 1);
 
-                        PlayerInventory inventory = (PlayerInventory) event.getView().getBottomInventory();
-
-                        if (compound.getInt("isHelmet") == 1) {
-                            org.bukkit.inventory.ItemStack headItem = inventory.getHelmet();
-
-                            new BukkitRunnable() {
-
-                                @Override
-                                public void run() {
-                                    player.getInventory().setHelmet(Utility.convertToBukkitItem(cursor));
-                                    cancel();
-                                }
-                            }.runTaskTimer(NBTMain.instance, 0, 1);
-
-                            event.setCursor(headItem);
-                        }
-
-
-                        event.setResult(Event.Result.ALLOW);
-                    }
-                }
-
-                if(event.getClick().isShiftClick()){
-                    ItemStack cursor = Utility.convertToItem(event.getCurrentItem());
-                    NBTTagCompound compound = Utility.getNBTTagCompound(cursor);
-
-                    PlayerInventory inventory = (PlayerInventory) event.getView().getBottomInventory();
-
-                    if (compound.getInt("isHelmet") == 1) {
-                        org.bukkit.inventory.ItemStack headItem = inventory.getHelmet();
-
-
-                        new BukkitRunnable() {
-
-                            @Override
-                            public void run() {
-                                player.getInventory().setHelmet(Utility.convertToBukkitItem(cursor));
-                                cancel();
+                                event.setCursor(headItem);
                             }
-                        }.runTaskTimer(NBTMain.instance, 0, 1);
 
-                        event.setCursor(headItem);
-                        event.setCurrentItem(new org.bukkit.inventory.ItemStack(Material.AIR));
-                        event.setCancelled(true);
-                        return;
+
+                            event.setResult(Event.Result.ALLOW);
+                        }
+                    }
+                    if (event.getInventory() instanceof InventoryCreativeEvent) {
+
+                        if (event.getSlot() == 5) {
+                            ItemStack cursor = Utility.convertToItem(event.getCursor());
+                            NBTTagCompound compound = Utility.getNBTTagCompound(cursor);
+
+                            PlayerInventory inventory = (PlayerInventory) event.getView().getBottomInventory();
+
+                            if (compound.getInt("isHelmet") == 1) {
+                                org.bukkit.inventory.ItemStack headItem = inventory.getHelmet();
+
+                                new BukkitRunnable() {
+
+                                    @Override
+                                    public void run() {
+                                        player.getInventory().setHelmet(Utility.convertToBukkitItem(cursor));
+                                        cancel();
+                                    }
+                                }.runTaskTimer(NBTMain.instance, 0, 1);
+
+                                event.setCursor(headItem);
+                            }
+
+
+                            event.setResult(Event.Result.ALLOW);
+                        }
+                    }
+
+                    if (event.getClick().isShiftClick()) {
+                        ItemStack cursor = Utility.convertToItem(event.getCurrentItem());
+                        NBTTagCompound compound = Utility.getNBTTagCompound(cursor);
+
+                        PlayerInventory inventory = (PlayerInventory) event.getView().getBottomInventory();
+
+                        if (compound.getInt("isHelmet") == 1) {
+                            org.bukkit.inventory.ItemStack headItem = inventory.getHelmet();
+
+
+                            new BukkitRunnable() {
+
+                                @Override
+                                public void run() {
+                                    player.getInventory().setHelmet(Utility.convertToBukkitItem(cursor));
+                                    cancel();
+                                }
+                            }.runTaskTimer(NBTMain.instance, 0, 1);
+
+                            event.setCursor(headItem);
+                            event.setCurrentItem(new org.bukkit.inventory.ItemStack(Material.AIR));
+                            event.setCancelled(true);
+                            return;
+                        }
                     }
                 }
+            } catch (Exception e) {
+                return;
             }
-        }catch (Exception e){
-            return;
         }
     }
+
 
 
 

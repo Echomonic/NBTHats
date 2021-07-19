@@ -1,6 +1,7 @@
 package dev.echo.hats.utils;
 
 import dev.echo.hats.NBTMain;
+import lombok.SneakyThrows;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -73,7 +74,11 @@ public class Utility {
 
         player.spigot().sendMessage(component);
     }
+    @SneakyThrows
     public static NBTTagCompound getNBTTagCompound(ItemStack stack){
+
+
+
         NBTTagCompound compound = (stack.hasTag()) ? stack.getTag() : new NBTTagCompound();
 
 
@@ -104,7 +109,7 @@ public class Utility {
     }
     public static String getErrorMessage(String message) {
 
-        return ChatColor.translateAlternateColorCodes('&', NBTMain.instance.getConfig().getString("errors."+ message));
+        return ChatColor.translateAlternateColorCodes('&', NBTMain.instance.getConfig().getString("error."+ message));
     }
     public void sendReflectionTitle(Player player, String titleText){
         try {
